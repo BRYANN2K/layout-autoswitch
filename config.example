@@ -1,0 +1,12 @@
+# Layout Autoswitch Configuration
+
+# List of devices to monitor.
+# Format: "MAC_ADDRESS:DEVICE_NAME:LAYOUT_ID"
+# Priority: The first device in the list that is connected will determine the layout.
+DEVICES=(
+    "D2:5E:40:00:B8:28:MX Keys Mini:fr+mac"
+    #"AA:BB:CC:DD:EE:FF:Apple Magic Keyboard:en+mac"
+)
+
+# Default layout to apply when no known devices are connected
+DEFAULT_LAYOUT="fr"
