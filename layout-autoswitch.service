@@ -1,0 +1,14 @@
+[Unit]
+Description=Layout Autoswitch
+After=network-online.target bluetooth.target
+
+[Service]
+Type=simple
+ExecStart=/YOUR_PATH/layout-autoswitch.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
