@@ -1,78 +1,75 @@
-<<<<<<< HEAD
-# layout-autoswitch
-=======
 # Bluetooth Keyboard Layout Autoswitch
 
-A simple, lightweight script to automatically switch your GNOME keyboard layout when a specific Bluetooth keyboard (e.g., Logitech MX Keys) connects or disconnects.
+A robust, user-level script to automatically switch your GNOME keyboard layout when specific Bluetooth keyboards connect or disconnect.
 
 ## Features
 
-- **Automatic Layout Switching**: Sets a specific layout (e.g., `fr+mac`) when your device connects, and reverts to a default layout (e.g., `fr`) when it disconnects.
+- **Multi-Device Support**: Configure multiple devices with different layouts (e.g., Mac layout for MX Keys, generic for others).
+- **Priority System**: If multiple devices are configured, the first one found connected takes priority.
+- **Config Separation**: User configuration is stored in `~/.config/layout-autoswitch/config` – safe from script updates.
 - **User-Level Service**: Runs entirely as your user—no root/sudo required.
-- **Desktop Notifications**: Get a subtle notification whenever the layout changes.
+- **Desktop Notifications**: Get a notification whenever the layout changes.
 
 ## Prerequisites
 
 - **GNOME Desktop Environment** (uses `gsettings`).
 - **BlueZ** (provides `bluetoothctl`).
-- **libnotify-bin** (provides `notify-send` for notifications, usually installed by default on many distros).
+- **libnotify-bin** (provides `notify-send` for strong descriptors).
 
 ## Installation
 
-### 1. Setup the Script
+### 1. Automatic Install (Recommended)
 
-1. Copy `layout-autoswitch.sh` to a permanent location, for example:
-   ```bash
-   mkdir -p ~/Documents/Scripts/layout-autoswitch
-   cp layout-autoswitch.sh ~/Documents/Scripts/layout-autoswitch/
-   chmod +x ~/Documents/Scripts/layout-autoswitch/layout-autoswitch.sh
-   ```
+Run the provided installer to set up the directories and systemd service automatically:
 
-2. **Edit the script** to configure your device and layouts:
-   Open `layout-autoswitch.sh` and update the top variables:
-   ```bash
-   DEVICE_MAC="D2:5E:40:00:B8:28"   # Get this via 'bluetoothctl devices'
-   DEVICE_NAME="MX Keys Mini"       # Friendly name for notifications
-   LAYOUT_CONNECTED="fr+mac"        # Layout ID when connected
-   LAYOUT_DISCONNECTED="fr"         # Layout ID when disconnected
-   ```
+```bash
+chmod +x install.sh
+./install.sh
+```
 
-   > **Tip:** To find your device's MAC address, run `bluetoothctl devices` in a terminal.
+### 2. Configuration
 
-### 2. Setup the Service
+1. Edit the configuration file created at `~/.config/layout-autoswitch/config`.
+2. Find your device MAC address using `bluetoothctl devices`.
+3. Add your devices to the `DEVICES` array.
 
-1. Copy `layout-autoswitch.service` to the systemd user directory:
-   ```bash
-   mkdir -p ~/.config/systemd/user/
-   cp layout-autoswitch.service ~/.config/systemd/user/
-   ```
+**Example `~/.config/layout-autoswitch/config`:**
 
-2. **Edit the service file** to point to your script:
-   Open `~/.config/systemd/user/layout-autoswitch.service` and ensure the `ExecStart` path is correct.
-   *(Note: The provided file uses `%h` which automatically resolves to your home directory, assuming you followed the path in step 1).*
+```bash
+# Format: "MAC_ADDRESS:DEVICE_NAME:LAYOUT_ID"
+DEVICES=(
+    "D2:5E:40:00:B8:28:MX Keys Mini:fr+mac"
+    "AA:BB:CC:DD:EE:FF:Generic Keyboard:us"
+)
 
-3. Reload systemd and enable the service:
-   ```bash
-   systemctl --user daemon-reload
-   systemctl --user enable --now layout-autoswitch.service
-   ```
+# Fallback layout when no known devices are connected
+DEFAULT_LAYOUT="fr"
+```
 
-## Usage
+### 3. Verification
 
-Once enabled, the service runs in the background. 
-- Turn on your keyboard -> Notification: "Connected", Layout switches.
-- Turn off your keyboard -> Notification: "Disconnected", Layout reverts.
+Check the service status:
+```bash
+systemctl --user status layout-autoswitch.service
+```
 
-You can check the logs anytime with:
+Read real-time logs:
 ```bash
 journalctl --user -u layout-autoswitch -f
 ```
 
-## Uninstallation
+## How It Works
 
-To remove the service:
+The script runs in the background and checks (polls) for connected devices every 5 seconds.
+1. It loops through your `DEVICES` list in order.
+2. If it finds a connected device, it switches to that device's specified layout.
+3. If no listed devices are connected, it switches to `DEFAULT_LAYOUT`.
+4. It only applies changes (and notifies you) if the state actually changes.
+
+## Uninstall
+
 ```bash
 systemctl --user disable --now layout-autoswitch.service
 rm ~/.config/systemd/user/layout-autoswitch.service
+rm -rf ~/.config/layout-autoswitch
 ```
->>>>>>> 1647a53 (Premier commit)
